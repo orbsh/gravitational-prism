@@ -1,0 +1,3 @@
+# Run-time state, not source: logs from dev.nu, pids from a host-mode run.
+logs/
+run/
