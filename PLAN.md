@@ -18,7 +18,12 @@ usable" means. It is the one place to read before asking "what is left".
 
 ## Units, in order
 
-> **BLOCKED ON FLUXEN (2026-10-29): the wire envelope is being removed.** U1/U3/U5 landed against
+> **UNBLOCKED 2026-10-29 (fluxen `460d867`): the wire envelope is GONE.** prism's `/channel` was
+> ported in the same pass (downstream = the action list; the venue's speech = `inject` into
+> `identity`/`notice`; no `ev != draw` verbs, no `init.result`), and U4's handshake is now VERIFIED
+> by `tests/effector_handshake.rs`. What remains gated is nothing: U6 and U7 start from the shapes
+> that landed. The paragraph below records what the gate was, for the reader who finds this plan
+> mid-history. U1/U3/U5 landed against
 > today's wire (`content::Message` down, `content::Outflow` up, prism wrapping answers as
 > `Message{ev:"draw"}`; gravity's view-protocol item carries `frames` inside the turn envelope).
 > U6 and U7 are written against those shapes, so they start AFTER the refactor and after
