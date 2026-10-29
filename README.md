@@ -84,4 +84,5 @@ the first half.
     status.nu   what is up           dev.nu     host processes, foreground
     say.nu      one turn             build.nu   the three images
     probe.nu    direct model probe
+    PLAN.md     the integrated plan across the repos (order, units that land together, open work)
     gravity.json  the CLI's venue address, account, and the password variable's name
