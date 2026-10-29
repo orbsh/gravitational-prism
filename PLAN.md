@@ -18,6 +18,14 @@ usable" means. It is the one place to read before asking "what is left".
 
 ## Units, in order
 
+> **THE WIRE IS SETTLED 2026-10-29:** both directions are `view:<name>` (marker = a page cannot
+> forge an internal event); a booth never answers into the page — it emits `view:<name>` with
+> `{name, channel_id, sender, data}`, and prism strips the envelope and forwards, drawing an
+> operation list and injecting anything else into the slot named by the event. `layout/venue.yaml`
+> speaks the current fluxen vocabulary (`kind: uplink, slot: turn.submit`, tree address `slot`).
+> What a venue build must still track: prism's uplink is still an `invoke` rather than an emit —
+> when that moves, `turn.submit` becomes `view:turn.submit` and gravity's turn booth declares it.
+>
 > **UNBLOCKED 2026-10-29 (fluxen `460d867`): the wire envelope is GONE.** prism's `/channel` was
 > ported in the same pass (downstream = the action list; the venue's speech = `inject` into
 > `identity`/`notice`; no `ev != draw` verbs, no `init.result`), and U4's handshake is now VERIFIED

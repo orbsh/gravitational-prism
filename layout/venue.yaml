@@ -12,7 +12,7 @@
 # One frame, `create`: the whole shell. Everything later is `set`/`append`/`patch` against
 # the slots this frame declares (`graph`, `chat`).
 - action: create
-  event: ""
+  slot: ""
   data:
     type: case
     attrs:
@@ -95,9 +95,9 @@
                 children:
                   - type: input
                     id: prompt
-                    # The uplink: fluxen emits this event on the ONE socket; the venue's
+                    # The uplink: fluxen emits this INTENT on the ONE socket; the venue's
                     # renderer leg dispatches it (today to the booth named `turn.submit`).
                     bind:
                       value:
-                        kind: event
-                        event: turn.submit
+                        kind: dest
+                        dest: turn.submit
