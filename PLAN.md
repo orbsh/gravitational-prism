@@ -9,14 +9,22 @@ usable" means. It is the one place to read before asking "what is left".
 | Repo | State | Open work that this plan sequences |
 |:--|:--|:--|
 | krystallizer (k10r) | clean, main. mem-server HTTP face + `GET /export` (ADR-0013) landed; tests green at the last recorded gate | nothing owed to the stack. Deferred by ruling: dreaming/community detection, the SKILL topological walk, Actor nodes |
-| prism | clean, main. Gateway, identity (device+account, argon2id in prism's OWN okm), turns, `/effector/<alias>` mount, `/code` export landed | `/assets` + `init` (Phase 1.10); the node handshake (Phase 1.8 step 2, unblocked 2026-10-29); CLI (Phase 2) |
+| prism | clean, main. Gateway, identity, turns, mount, `/code`, and the RENDERER LEG landed (bundle at the origin, layout PUSHED on connect, `view` forwarding, `turn.submit` → view frames) | the renderer leg's next cuts (per-turn slot, login form, sessions — U6/U7), the node handshake (U4), CLI (Phase 2). All but the handshake WAIT on fluxen's envelope removal |
 | gravity | clean, main. The turn executes end to end through the induction guests; the skill walk landed 2026-10-26 | Phases 2.5 (transcript/history split + cold-call declaration), 2.6 (progress as data), 3 (the idle/no-turn trigger is all that is left), 4.5 (unified call model), 5 (weight write-back + ordering/retry) |
 | effector | clean, main; one unpushed docs commit | Phase 3 remaining (domain allowlists, seccomp, `command_exec` mechanism, read-denial patterns, cold-call over the wire) + the node identity CLI (`keygen`/`register`) that prism's handshake needs |
 | induction | clean, main. protocol + host + guest landed | nothing blocking |
-| fluxen | main; the tree carries uncommitted drag/dock work (ADR 0019/0020, in progress). Renderer + release bundle (`dist-release/`) landed | the `ui-core`/`boot` split (ADR 0021; `~/world/fluxen/docs/PLAN.md` last section) — the structural precondition for a host that re-wraps the core |
+| fluxen | main. `ui-core`/`boot` split landed 2026-10-29; the transport bridge now queues frames instead of keeping the latest (a pushed batch used to lose all but its last frame) | IN PROGRESS, by the user: REMOVING THE WIRE ENVELOPE. Everything on prism's renderer leg and gravity's `protocol=fluxen` is written against today's envelope and is re-derived after it lands |
 | aura | clean, main. The realm, the induction carrier branch, the mounted effector gateway for local mode | Phases 4.20 leftovers, 6 (TTL/cold re-entry), 7/8 wiring (the implementations live in gravity/prism), slate-engine option (no pressure) |
 
 ## Units, in order
+
+> **BLOCKED ON FLUXEN (2026-10-29): the wire envelope is being removed.** U1/U3/U5 landed against
+> today's wire (`content::Message` down, `content::Outflow` up, prism wrapping answers as
+> `Message{ev:"draw"}`; gravity's view-protocol item carries `frames` inside the turn envelope).
+> U6 and U7 are written against those shapes, so they start AFTER the refactor and after
+> re-deriving the contract from fluxen. U4 (node handshake) is untouched by it — that is the unit
+> to pick up while waiting. Prism's own ledger names the exact files to revisit:
+> `~/world/prism/docs/PLAN.md`, "Next, in order — and what is WAITING on fluxen".
 
 **U1 — prism's UI leg: `/assets` + `init` + the browser wire** (prism). **LANDED 2026-10-29 in part**:
 the static face, the `/ui` leg speaking fluxen's wire, and `init` from `file:`/`event:` are in and
@@ -75,7 +83,20 @@ region, answer bubble, then one `patch` per round); prism's renderer leg asks fo
 its own declared slots (`chat`/`say`) and forwards the batches as `draw` frames. Verified end to
 end against the SSE stub: typing on the renderer leg produces a streamed answer in the rack.
 
-**U6 — gravity's remaining phases**, then **U7 — k10r's deferred work**. Neither blocks the UI
+**U6 — the venue becomes usable by a stranger** (prism). Two cuts, one purpose:
+(a) THE TEXT SLOT MUST BE PER TURN — `UI_TEXT` is the constant `say`, so a second turn's `set` and
+patches rewrite the region the first turn's bubble also binds (`kind: source`): every frame is
+right and the history smears. Fix is a per-device counter (`say.<n>`) plus a TWO-TURN e2e that
+fails today. (b) LOGIN AS A COMPONENT IN THE LAYOUT — the verbs exist and answer; the layout has no
+form, so a stranger can look but not ask (`turn` is user-gated). Typing after logging in is the
+acceptance.
+
+**U7 — sessions instead of devices, and history on connect** (prism + an application booth). The
+leg partitions by device id today; sessions are the real key. "Connect and see the history" is the
+`event:ui_init` path already ruled: the venue emits, a booth projects k10r's session into view
+frames. Needs the session concept before it needs code.
+
+**U8 — gravity's remaining phases**, then **U9 — k10r's deferred work**. Neither blocks the UI
 milestone; both are what makes the assistant useful once the venue has a face.
 
 ## Precedents to imitate, not to invent around
