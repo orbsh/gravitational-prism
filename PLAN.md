@@ -102,14 +102,20 @@ turn round trip, then `nu down.nu`.
 
 ## Deployment facts that move with these units
 
-- prism gains two env vars: `PRISM_ASSETS` (bundle directory, canonical path) and `PRISM_INIT`
-  (`file:<path>` | `event:<type>/<handler>`). Both absent = the plane serves identity/turns with no
-  UI, and says so at boot.
-- The fluxen bundle has to reach the prism container: either baked into prism's image at build time
-  or mounted as a volume. `build.nu` builds gravity → k10r → prism because prism copies gravity's
-  guest binaries; the bundle is a fourth input this repo must supply.
-- `up.nu`'s readiness check currently completes on the WS handshake. The UI milestone adds one
-  check: `GET /assets/` answers 200 before the venue is reported up.
+- prism's faces are two env vars, both DEFAULTS in its image: `PRISM_ASSETS` (the bundle
+  directory — the bundle IS the origin, so `/` is its `index.html`) and `PRISM_INIT`
+  (`file:<path>` | `event:<name>`, where the event is emitted on every renderer connect). A
+  deployment overrides either with `-e`; both absent is legal and the venue says so.
+- **The bundle route is decided: build.nu stages it.** `venue/` in the build context carries
+  the renderer bundle (built once, host-side, with trunk — an artifact, not a toolchain) and
+  this repo's `layout/`, and prism's Dockerfile COPYs both (`/app/dist`, `/app/layout`). The
+  bundle is therefore built by the trunk that fluxen's own image pins, and the venue never
+  rebuilds a front end inside its image.
+- `up.nu` reports the venue up only after `/` answers 200 — a venue without a bundle serves
+  identity and turns fine and looks exactly like a broken page in a browser, so the failure
+  belongs in the boot, not in the user's screen. `dev.nu` points the same two variables at the
+  tree (`fluxen/examples/renderer/dist`, `layout/venue.yaml`), so host mode and container mode
+  show the same page.
 
 ## Decisions the plan depends on (do not re-litigate)
 

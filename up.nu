@@ -62,6 +62,11 @@ def main [
     ]
     wait-upgrade $"($venue.host):($venue.port)"
     print $"prism  (ansi green)up(ansi reset)  ($venue.host):($venue.port)  volume ($PRISM_NAME)-data"
+    # The venue's FACE (ADR-0017 §8): the bundle is the origin, so `/` answering 200 is the
+    # one check that the front end reached the image. Without it the venue is up and looks
+    # exactly like a broken page in a browser — worth failing on here, not there.
+    wait-door $"http://($venue.host):($venue.port)/"
+    print $"venue  (ansi green)open(ansi reset)  http://($venue.host):($venue.port)/"
     print "one turn: nu say.nu <text>"
 }
 

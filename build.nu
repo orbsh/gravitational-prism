@@ -50,6 +50,30 @@ def main [
         }
     }
 
+    # The renderer bundle and the venue's layout are DEPLOYMENT INPUTS, not repo contents:
+    # the image carries an artifact, not a toolchain and not a second checkout. The bundle is
+    # built here, once, with the same trunk fluxen's own image pins — a bundle from a
+    # different trunk is a different artifact, and the venue would be serving a front end
+    # nobody verified.
+    let venue = ($context | path join "venue")
+    mkdir ($venue | path join "layout")
+    let layout_src = ($env.FILE_PWD | path join "layout")
+    let copied_layout = (^rsync -a --delete $"($layout_src)/" $"($venue)/layout/" | complete)
+    if $copied_layout.exit_code != 0 {
+        error make { msg: $"staging the venue layout failed: ($copied_layout.stderr | str trim)" }
+    }
+    if ((which trunk | is-empty)) {
+        error make { msg: "trunk is not on PATH — the renderer bundle cannot be built (fluxen's Dockerfile pins one; install it host-side for a release build)" }
+    }
+    let renderer = ($src | path join "fluxen" "examples" "renderer")
+    let dist = ($venue | path join "dist")
+    let bundle = (do { cd $renderer; ^trunk build --release --dist $dist } | complete)
+    if $bundle.exit_code != 0 {
+        print ($bundle.stderr | lines | last 15 | str join (char nl))
+        error make { msg: "the renderer bundle did not build" }
+    }
+    print $"venue (ansi green)staged(ansi reset)  bundle + layout → ($venue)"
+
     for name in $names {
         let target = ($root | path join "target" $name)
         mkdir $target
