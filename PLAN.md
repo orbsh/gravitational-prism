@@ -18,8 +18,16 @@ usable" means. It is the one place to read before asking "what is left".
 
 ## Units, in order
 
-**U1 — prism's UI leg: `/assets` + `init` + the browser wire** (prism). Three things in one unit,
-because they meet on one socket:
+**U1 — prism's UI leg: `/assets` + `init` + the browser wire** (prism). **LANDED 2026-10-29 in part**:
+the static face, the `/ui` leg speaking fluxen's wire, and `init` from `file:`/`event:` are in and
+tested (`tests/ui_leg.rs`), with `webhook:` refused at boot. The layout is PUSHED on connect (no client-side
+`init`), an `event:` source is an emit whose resulting view events prism forwards to the
+renderers (booth `renderer`, event `view`), and the leg's identity verbs are in as well (verbs `login`/`signup`/`logout` on the leg with `user:<id>` in the
+`connected`/`.result` sender; every other uplink calls the booth named by the event and its
+answer arrives as view frames; revocation kicks renderer sockets too). Still owed on this
+unit: the turn's `protocol=fluxen` stream landing in the layout's slot, and the bundle's
+route into the image. Three things in one unit, because they meet
+on one socket:
 
 - The static face on the existing accept loop (`/assets/<rel>`, entry document at `/assets` and
   `/assets/`; canonical-root check; no listing; hashed names immutable).
@@ -47,9 +55,9 @@ styles — prism mounts the core with its own transport, reflux keeps consuming 
 bundle at the page root. fluxen ADR 0021 + `docs/external-integration.md`
 (en + zh).
 
-**U3 — the default layout document** (here). The two-column shell (left `forcegraph`, right the
-stream/rack) belongs in this repo — `layout/venue.yaml`, not created yet — and is what
-`PRISM_INIT=file:…` will point at. It is application CONTENT: the framework carries no layout, the
+**U3 — the default layout document** (here). **CREATED 2026-10-29**: `layout/venue.yaml` is the
+two-column shell (left `forcegraph`, right the stream rack + input bound to `turn.submit`), verified
+rendering in headless chromium from a locally run prism. It is application CONTENT: the framework carries no layout, the
 renderer ships no application shape, this repo is where a deployment says what its application
 looks like. It also DECLARES the stream's landing slot (the chat column's slot name), which is what
 `protocol=fluxen` writes into — the booth gets the name from the caller, never from a constant.
@@ -60,10 +68,12 @@ looks like. It also DECLARES the stream's landing slot (the chat column's slot n
 three-way. Plan: `~/world/prism/docs/handshake-plan.md`. Both ends must merge together — `required`
 with half a handshake answers every node as keyless.
 
-**U5 — the turn's view format** (gravity + prism). `protocol` on the turn call: `data` (default,
-raw deltas — what the CLI and any non-UI consumer get) or `fluxen` (view frames: `append`/`set`
-against the layout-declared slot). Owned by gravity (`docs/PLAN.md`, the OUTPUT FORMAT note);
-prism passes the caller's value through.
+**U5 — the turn's view format** (gravity + prism). **LANDED 2026-10-29**: `protocol` on the turn
+call — `data` (default, raw deltas for the CLI and every non-UI consumer) or `fluxen` (frames
+against slots the CALLER names). gravity's guest builds them (question line, `set` of the text
+region, answer bubble, then one `patch` per round); prism's renderer leg asks for `fluxen` with
+its own declared slots (`chat`/`say`) and forwards the batches as `draw` frames. Verified end to
+end against the SSE stub: typing on the renderer leg produces a streamed answer in the rack.
 
 **U6 — gravity's remaining phases**, then **U7 — k10r's deferred work**. Neither blocks the UI
 milestone; both are what makes the assistant useful once the venue has a face.
