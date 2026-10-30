@@ -49,10 +49,9 @@ def main [] {
         PRISM_ADDR: $venue
         PRISM_DATA: ($env.HOME | path join ".local/share/prism")
         PRISM_IDENTITY: "open"
-        # The tree's own faces: the bundle the UI build writes, and this repo's layout. Same
-        # two facts the image bakes in, so host mode and container mode show the same page.
+        # The bundle the UI build writes — the venue's only deployment fact left. The LAYOUT is
+        # the application's answer to `view:connect`, so there is nothing to configure here.
         PRISM_ASSETS: ($root | path join "fluxen/examples/renderer/dist")
-        PRISM_INIT: $"file:($root | path join 'layout/venue.yaml')"
         GRAVITY_STORE_URL: $"http://($mem)"
         GRAVITY_ENDPOINT: (endpoint)
         GRAVITY_MODEL: (model)

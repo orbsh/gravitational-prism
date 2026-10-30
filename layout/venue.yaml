@@ -4,10 +4,10 @@
 # a rack bound to the `chat` data slot, with the input pinned at its foot. No menu, no tabs,
 # no routes: navigation is a relation, not a category.
 #
-# This file is application CONTENT and a deployment fact: prism reads it at boot
-# (`PRISM_INIT=file:…`) and delivers it as ordinary view frames to whatever renderer
-# connects. Nothing about it is compiled into the renderer, and nothing about it lives in
-# prism's code — swap the file, keep the front end.
+# This file is application CONTENT: the shell an application answers the `view:connect`
+# event with (prism has no layout configuration any more — `PRISM_INIT` is gone). Nothing
+# about it is compiled into the renderer, and nothing about it lives in prism's code —
+# swap the source, keep the front end.
 #
 # One frame, `create`: the whole shell. Everything later is `set`/`append`/`patch` against
 # the slots this frame declares (`graph`, `chat`).
