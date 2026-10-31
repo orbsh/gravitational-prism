@@ -167,3 +167,9 @@ turn round trip, then `nu down.nu`.
   `fluxen` view frames against the layout-declared slot); application knowledge stays in the booth.
 - Trust posture is declared, never defaulted (`PRISM_IDENTITY=required|open`), and the startup log
   states it.
+
+> **THE MARKER IS `ui:` (2026-10-31, prism ADR-0017's Update).** Every marked event above is
+> `ui:<name>` — the rule, the direction and the stripping are unchanged, only the word is (in this
+> stack `view` also names krystallizer's session projection and fluxen's forcegraph view). Read the
+> 2026-10-29 entry's `view:<name>` as `ui:<name>`; `layout/venue.yaml` still speaks fluxen's
+> vocabulary upstream and needs no change.

@@ -50,7 +50,7 @@ def main [] {
         PRISM_DATA: ($env.HOME | path join ".local/share/prism")
         PRISM_IDENTITY: "open"
         # The bundle the UI build writes — the venue's only deployment fact left. The LAYOUT is
-        # the application's answer to `view:connect`, so there is nothing to configure here.
+        # the application's answer to `ui:connect`, so there is nothing to configure here.
         PRISM_ASSETS: ($root | path join "fluxen/examples/renderer/dist")
         GRAVITY_STORE_URL: $"http://($mem)"
         GRAVITY_ENDPOINT: (endpoint)
