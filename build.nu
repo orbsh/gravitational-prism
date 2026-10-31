@@ -50,18 +50,17 @@ def main [
         }
     }
 
-    # The renderer bundle and the venue's layout are DEPLOYMENT INPUTS, not repo contents:
-    # the image carries an artifact, not a toolchain and not a second checkout. The bundle is
-    # built here, once, with the same trunk fluxen's own image pins — a bundle from a
-    # different trunk is a different artifact, and the venue would be serving a front end
-    # nobody verified.
+    # The renderer bundle is a DEPLOYMENT INPUT, not repo content: the image carries an
+    # artifact, not a toolchain and not a second checkout. It is built here, once, with the
+    # same trunk fluxen's own image pins — a bundle from a different trunk is a different
+    # artifact, and the venue would be serving a front end nobody verified. A layout is NOT
+    # staged any more: the screen is an application's answer to `ui:connect`, so a file would
+    # only say that no application answered.
     let venue = ($context | path join "venue")
-    mkdir ($venue | path join "layout")
-    let layout_src = ($env.FILE_PWD | path join "layout")
-    let copied_layout = (^rsync -a --delete $"($layout_src)/" $"($venue)/layout/" | complete)
-    if $copied_layout.exit_code != 0 {
-        error make { msg: $"staging the venue layout failed: ($copied_layout.stderr | str trim)" }
-    }
+    # The venue dir is REBUILT, not updated in place: an artifact left in the context by an older
+    # build (a directory this script no longer stages) would ride into the image unnoticed.
+    ^rm -rf $venue
+    mkdir $venue
     if ((which trunk | is-empty)) {
         error make { msg: "trunk is not on PATH — the renderer bundle cannot be built (fluxen's Dockerfile pins one; install it host-side for a release build)" }
     }
@@ -72,7 +71,7 @@ def main [
         print ($bundle.stderr | lines | last 15 | str join (char nl))
         error make { msg: "the renderer bundle did not build" }
     }
-    print $"venue (ansi green)staged(ansi reset)  bundle + layout → ($venue)"
+    print $"venue (ansi green)staged(ansi reset)  bundle → ($venue)"
 
     for name in $names {
         let target = ($root | path join "target" $name)

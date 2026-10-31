@@ -173,3 +173,9 @@ turn round trip, then `nu down.nu`.
 > stack `view` also names krystallizer's session projection and fluxen's forcegraph view). Read the
 > 2026-10-29 entry's `view:<name>` as `ui:<name>`; `layout/venue.yaml` still speaks fluxen's
 > vocabulary upstream and needs no change.
+
+## THE LAYOUT FILE IS GONE 2026-10-31
+
+`layout/venue.yaml` and its staging step (`build.nu`'s mkdir + rsync into `venue/layout`) are deleted. The file's own header said prism had no consumer for it (the `init` source is deleted: no verb, no `PRISM_INIT`, no `init.rs`), and the two-column shell it described is drawn by gravity's booth at `ui:connect` — so it was a second home for the screen, and prism's image shipped a directory nothing reads (`COPY venue/layout/` + `PRISM_INIT=file:/app/layout/venue.yaml` are gone from the Dockerfile as well).
+
+What the build stages now is ONE artifact: the renderer bundle, built here with the trunk fluxen's own image pins (`trunk build --release --dist venue/dist`), copied into the image and served from the origin.
