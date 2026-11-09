@@ -19,7 +19,7 @@ All eight repos are clean on `main` with nothing unpushed. The gates named below
 ## What is left, in the order it should land
 
 1. **prism's Phase 2 is closed as moot** (ruled 2026-11-09, prism's own PLAN carries the reasoning): the venue ships no client — its binary is a server — and gravity's `gravity` binary already is the venue client, kubectl-shaped on the one wire. What prism owes its clients is the wire itself, not a second client. Reopen this only if a consumer needs something the wire cannot express.
-2. **prism's user→devices fan-out — or narrow the sentence.** MODELING says a user may be reached through the devices bound to it; `forward` reads one `device`, `PeerDeliver` takes a single `Option<&str>`, and `Registry::devices_of` has no caller outside its own test. Either it becomes a `forward` + `PeerDeliver` change with a two-device e2e, or the model's sentence is narrowed to what the code does. One ruling, one small commit.
+2. **prism's user→devices fan-out — LANDED 2026-11-09.** An emit names `device` or `user`; the venue fans a user out to every live connection bound to it, through one predicate both legs share, and a malformed address reaches nobody rather than everybody (a typo must not become a broadcast). MODELING states the field spelling, ADR-0018 §3 the reason a booth cannot do this itself. Gates: `ui_leg` 13/13, `peer_leg` 4/4, whole suite 74/74. With it, this repo has no open unit left.
 3. **gravity's chain, in its own numbering** (2.5 → 2.6 → 3 → 4.5 → 5). Each unit names its seam: 4.5 is aura's call surface, 5 is k10r's rows and the weight write-back. None of it blocks the venue.
 4. **k10r's and fluxen's deferred blocks are product decisions**, not the stack's critical path.
 
