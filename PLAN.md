@@ -1,22 +1,67 @@
 # PLAN — the stack, integrated
 
-Per-repo PLANs own their own phases (`~/world/<repo>/docs/PLAN.md`). This file owns what none of
-them can: the ORDER across repos, the units that only land together, and what "the stack is
-usable" means. It is the one place to read before asking "what is left".
+Per-repo PLANs own their own phases (`~/world/<repo>/docs/PLAN.md`). This file owns what none of them can: the ORDER across repos, the units that only land together, and what "the stack is usable" means. It is the one place to read before asking "what is left".
 
-## Where it stands (2026-10-29)
+## Where it stands (2026-11-09)
 
-| Repo | State | Open work that this plan sequences |
-|:--|:--|:--|
-| krystallizer (k10r) | clean, main. mem-server HTTP face + `GET /export` (ADR-0013) landed; tests green at the last recorded gate | nothing owed to the stack. Deferred by ruling: dreaming/community detection, the SKILL topological walk, Actor nodes |
-| prism | clean, main. Gateway, identity, turns, mount, `/code`, and the RENDERER LEG landed (bundle at the origin, layout PUSHED on connect, `view` forwarding, `turn.submit` → view frames) | the renderer leg's next cuts (per-turn slot, login form, sessions — U6/U7), the node handshake (U4), CLI (Phase 2). All but the handshake WAIT on fluxen's envelope removal |
-| gravity | clean, main. The turn executes end to end through the induction guests; the skill walk landed 2026-10-26 | Phases 2.5 (transcript/history split + cold-call declaration), 2.6 (progress as data), 3 (the idle/no-turn trigger is all that is left), 4.5 (unified call model), 5 (weight write-back + ordering/retry) |
-| effector | clean, main; one unpushed docs commit | Phase 3 remaining (domain allowlists, seccomp, `command_exec` mechanism, read-denial patterns, cold-call over the wire) + the node identity CLI (`keygen`/`register`) that prism's handshake needs |
-| induction | clean, main. protocol + host + guest landed | nothing blocking |
-| fluxen | main. `ui-core`/`boot` split landed 2026-10-29; the transport bridge now queues frames instead of keeping the latest (a pushed batch used to lose all but its last frame) | IN PROGRESS, by the user: REMOVING THE WIRE ENVELOPE. Everything on prism's renderer leg and gravity's `protocol=fluxen` is written against today's envelope and is re-derived after it lands |
-| aura | clean, main. The realm, the induction carrier branch, the mounted effector gateway for local mode | Phases 4.20 leftovers, 6 (TTL/cold re-entry), 7/8 wiring (the implementations live in gravity/prism), slate-engine option (no pressure) |
+All eight repos are clean on `main` with nothing unpushed. The gates named below are the last RECORDED ones; the only suite re-measured today is prism's (71/71, twelve binaries).
 
-## Units, in order
+| Repo | HEAD | State | Open work this plan sequences |
+|:--|:--|:--|:--|
+| krystallizer (k10r) | `cedc1c7` 2026-11-06 | mem-server's HTTP face, the session projection, the checkpoint door and `/export`; the reverse membership read is a lead face (okm ADR-0054) | nothing owed to the stack. Its own PLAN defers dreaming/community detection, the SKILL topological walk, Actor nodes, and document→graph population (a product decision before a model one) |
+| prism | `2473d85` 2026-11-07 | one accept loop; identity (device, user, token, the `Activity` clock); the auth booth's seam and its one surface; the renderer leg; the `/effector/<alias>` handshake; `/code`; `/admin`; the bundle at the origin. Suite 71/71, measured today | user→devices fan-out (MODELING promises it, `ui.rs::forward` addresses one device), and Phase 2 — which is a ruling, not code: the venue ships no CLI, and gravity's `gravity` binary IS the venue client |
+| gravity | `b24d5d8` 2026-11-07 | the turn runs end to end through the induction guests; the shell and its forms answer `ui:connect`; the CLI is a venue client, emitting `ui:turn.submit` with the conversation as a payload field | its own PLAN: 2.5 (transcript/history split + cold-call declaration), 2.6 (progress as data), 3 (the turn-loop half landed 2026-10-26; the idle/no-turn trigger remains), 4.5 (unified call model), 5 (skill pull-through + weight write-back) |
+| effector | `2cc2b51` 2026-11-07 | executors and the remote-gateway frames; the `keygen`/`register` CLI; the deployable runner scripts; the mount served from prism | its own PLAN: 4 (operation dispatch — the `inline`/`link` payload forms), 5's residue (a declared scope field must name its enforcement point), 6 (data-path discipline) |
+| induction | `6d5f423` 2026-11-07 | protocol + host + guest; a framed peer channel is a `Link` | nothing blocking |
+| fluxen | `f0acae6` 2026-11-03 | the `ui-core`/`boot` split; the action list IS the downstream wire; the example host a page boots from | its own PLAN: `forget()` is still a retry stub; nothing blocking prism |
+| aura | `34af958` 2026-11-07 | the realm, the carriers, the executor registry, the local effector gateway | its own PLAN's unchecked phases: 4.20 residue, 6 (TTL/cold re-entry), 7/8 wiring, the slate-engine option (no pressure) |
+
+## What is left, in the order it should land
+
+1. **prism's Phase 2 is closed as moot** (ruled 2026-11-09, prism's own PLAN carries the reasoning): the venue ships no client — its binary is a server — and gravity's `gravity` binary already is the venue client, kubectl-shaped on the one wire. What prism owes its clients is the wire itself, not a second client. Reopen this only if a consumer needs something the wire cannot express.
+2. **prism's user→devices fan-out — or narrow the sentence.** MODELING says a user may be reached through the devices bound to it; `forward` reads one `device`, `PeerDeliver` takes a single `Option<&str>`, and `Registry::devices_of` has no caller outside its own test. Either it becomes a `forward` + `PeerDeliver` change with a two-device e2e, or the model's sentence is narrowed to what the code does. One ruling, one small commit.
+3. **gravity's chain, in its own numbering** (2.5 → 2.6 → 3 → 4.5 → 5). Each unit names its seam: 4.5 is aura's call surface, 5 is k10r's rows and the weight write-back. None of it blocks the venue.
+4. **k10r's and fluxen's deferred blocks are product decisions**, not the stack's critical path.
+
+## What "usable" means
+
+`nu up.nu` prints the two addresses; `http://127.0.0.1:8765/` serves the renderer bundle; the page connects to `/channel` on that same origin and gravity's booth answers `ui:connect` with the shell; the login control draws the two-field form into the `auth` region; a filled submit ends at "signed in as … / sign out"; typing in the stream submits a turn and the answer streams back into the rack; `nu down.nu` stops both.
+
+Measured on the real stack 2026-11-06 (prism + fluxen's bundle + gravity's shell + headless chromium). Not re-measured since — what was measured today is the suite, 71/71.
+
+## Deployment
+
+`nu build.nu` builds the three images in the one order that works — gravity, krystallizer, prism (`IMAGE_ORDER` in `lib.nu`) — and the renderer bundle is a build INPUT, not repo content: `trunk` (the version fluxen's own image pins) runs inside the build context and the artifact lands at `venue/dist`, which prism's Dockerfile copies and serves as the origin (`PRISM_ASSETS=/app/dist`).
+
+`nu up.nu` runs k10r and prism on one podman network and lets only the venue's port leave the machine (`-p 127.0.0.1:8765:8765`, `PRISM_ADDR=0.0.0.0:8765`, `PRISM_DATA=/data`, `PRISM_IDENTITY=open`). It declares the venue up only after `/` answers — a venue without a bundle serves identity and looks exactly like a broken page, so that failure belongs in the boot, not on the user's screen. `nu dev.nu` runs the same two processes from `target/release` with a pid file as the only handle (nothing is stopped by pattern); `status.nu` and `down.nu` follow it. `probe.nu` asks the endpoint one question directly, which is how "the model never asked" is separated from "the ask was lost on the way"; `say.nu` is one turn through gravity's CLI.
+
+## Decisions the plan depends on (do not re-litigate)
+
+- Identity and its storage are prism's: accounts (ns 50), devices (51), the node registry (52), tokens (53) and the idle clock (54) live in prism's own okm instance, while the credential verifier (55) belongs to the auth booth's own table. Aura receives the authenticated sender as payload metadata only.
+- Authentication is the venue's and the PROOF is a booth's: one call (`verify` | `register`) answers with the user id, and prism then binds the device and rotates the token. The gate is declared ON THE RECEIVE and read from the route table, and it fails open — anonymous connections are legitimate and never evicted. A refusal says `ui:auth.required {event}` beside the `notice`, and that is what opens the login surface.
+- The layout is the application's answer to `ui:connect`. There is no `init` verb, no `PRISM_INIT` and no layout file: the venue says two facts (`token`, `connect`), and whichever booth declared `ui:connect` draws.
+- The browser leg speaks the renderer's wire — downstream an action list (`Vec<Content>`), upstream `content::Outflow` — and the adaptation is prism's: fluxen is pure UI and carries no per-host adapter. `{ev, args}` stays the peer/CLI/effector leg. One shape per leg, never two on one leg.
+- A stream's format is the producer's call argument: gravity's turn takes `protocol` (`data` default | `fluxen` frames against slots the CALLER names), so the streaming region is per turn and never a constant.
+- The marker is `ui:` in both directions, and a conversation is not the venue's key: the address is a device, the authentication a user, and the conversation is the application's own data.
+- Trust posture is declared, never defaulted (`PRISM_IDENTITY=required|open`), and the effector handshake is host-first and posture-blind on the wire.
+
+## Units — where each landed
+
+| unit | outcome |
+|:--|:--|
+| U1 prism's UI leg | landed: the bundle is the origin, the layout is pushed on connect, `/channel` speaks the renderer's wire (`tests/ui_leg.rs`) |
+| U2 fluxen's structure split | landed: `ui-core` + `boot`, the host lives under `examples/` |
+| U3 the layout document | retired 2026-10-31: `layout/venue.yaml` deleted; gravity's booth draws the shell |
+| U4 the node handshake | landed and verified: `effector_handshake` 6/6, `admin_nodes` 4/4 |
+| U5 the turn's view format | landed: `protocol` on the call, gravity emitting per-turn frames |
+| U6 usable by a stranger | closed: the per-turn region moved to gravity (a bubble is addressed by row), and the login surface is the auth booth's one reserved region |
+| U7 sessions on the leg | closed as a direction error: a conversation is the application's data, not the venue's key |
+| U8 gravity's remaining phases | open, in gravity's own PLAN |
+| U9 k10r's deferred work | open, in k10r's own PLAN |
+
+## Ledger — the gate that formed this plan (as written)
+
+Spellings here read as the rulings that replaced them: `view:` reads `ui:`, `channel_id` reads `device`, and `session` in the effector's sense reads `executor`.
 
 > **THE WIRE IS SETTLED 2026-10-29:** both directions are `view:<name>` (marker = a page cannot
 > forge an internal event); a booth never answers into the page — it emits `view:<name>` with
@@ -38,141 +83,6 @@ usable" means. It is the one place to read before asking "what is left".
 > re-deriving the contract from fluxen. U4 (node handshake) is untouched by it — that is the unit
 > to pick up while waiting. Prism's own ledger names the exact files to revisit:
 > `~/world/prism/docs/PLAN.md`, "Next, in order — and what is WAITING on fluxen".
-
-**U1 — prism's UI leg: `/assets` + `init` + the browser wire** (prism). **LANDED 2026-10-29 in part**:
-the static face, the `/ui` leg speaking fluxen's wire, and `init` from `file:`/`event:` are in and
-tested (`tests/ui_leg.rs`), with `webhook:` refused at boot. The layout is PUSHED on connect (no client-side
-`init`), an `event:` source is an emit whose resulting view events prism forwards to the
-renderers (booth `renderer`, event `view`), and the leg's identity verbs are in as well (verbs `login`/`signup`/`logout` on the leg with `user:<id>` in the
-`connected`/`.result` sender; every other uplink calls the booth named by the event and its
-answer arrives as view frames; revocation kicks renderer sockets too). Still owed on this
-unit: the turn's `protocol=fluxen` stream landing in the layout's slot, and the bundle's
-route into the image. Three things in one unit, because they meet
-on one socket:
-
-- The static face on the existing accept loop (`/assets/<rel>`, entry document at `/assets` and
-  `/assets/`; canonical-root check; no listing; hashed names immutable).
-- The `init` answer from a declared source — `PRISM_INIT=file:<path>` (YAML or JSON, read at boot) or
-  `event:<type>/<handler>` (the booth's SINGLETON instance: a GLOBAL booth). Both deliver the layout
-  as ordinary `create` frames and close with `init.result {frames: N}`. `webhook:` is refused by
-  ruling. Absent = the standard error VALUE naming the config.
-- The wire itself: the browser leg speaks the RENDERER's format — downstream `content::Message`,
-  upstream `content::Outflow` — while `{ev, args}` stays the CLI/effector/peer shape. One shape per
-  leg. Prism supplies the transport and the boot in a small front-end crate that mounts fluxen's
-  `ui-core`; fluxen carries no per-host adapter (fluxen ADR 0021, `fluxen/docs/external-integration.md`).
-
-Testable before any front end exists: the route, the answer shape, and the wire are all lockable with
-a raw WS client.
-
-**U2 — fluxen's structure split** (fluxen). **LANDED 2026-10-29** — `crates/ui_core` (the core) and
-`examples/renderer` + `examples/transport-ws` (our host); the facade now re-exports the core only.
-Prism depends on the core, never on those two. `ui_leptos` → **`ui-core`** (`ctx` / `render` /
-`components` / `widgets`; no `#main`, no `transport-ws`) + **`boot`** (`#main` reader, WS wiring,
-`mount()`, `window.fluxen.send`); the `fluxen` facade re-exports core always and boot behind a
-feature. This is the structural precondition for U1: a host can only re-wrap the core once the core
-stops owning a boot. The boot and `transport-ws` then move to `examples/` (our host is not a library
-surface; `stage` stays a crate as a debugging tool — fluxen ADR 0021 「归属」). Two consumers, two
-styles — prism mounts the core with its own transport, reflux keeps consuming the example boot's
-bundle at the page root. fluxen ADR 0021 + `docs/external-integration.md`
-(en + zh).
-
-**U3 — the default layout document** (here). **CREATED 2026-10-29**: `layout/venue.yaml` is the
-two-column shell (left `forcegraph`, right the stream rack + input bound to `turn.submit`), verified
-rendering in headless chromium from a locally run prism. It is application CONTENT: the framework carries no layout, the
-renderer ships no application shape, this repo is where a deployment says what its application
-looks like. It also DECLARES the stream's landing slot (the chat column's slot name), which is what
-`protocol=fluxen` writes into — the booth gets the name from the caller, never from a constant.
-
-**U4 — the node handshake** (prism + effector, one landing). `Challenge{nonce}` + signed
-`Register` on `/effector/<alias>`; effector `keygen`/`register` CLI with `identity_file`;
-`credential` retired on both ends; prism's `required` posture gates on `NodeStore::verdict`
-three-way. Plan: `~/world/prism/docs/handshake-plan.md`. Both ends must merge together — `required`
-with half a handshake answers every node as keyless.
-
-**U5 — the turn's view format** (gravity + prism). **LANDED 2026-10-29**: `protocol` on the turn
-call — `data` (default, raw deltas for the CLI and every non-UI consumer) or `fluxen` (frames
-against slots the CALLER names). gravity's guest builds them (question line, `set` of the text
-region, answer bubble, then one `patch` per round); prism's renderer leg asks for `fluxen` with
-its own declared slots (`chat`/`say`) and forwards the batches as `draw` frames. Verified end to
-end against the SSE stub: typing on the renderer leg produces a streamed answer in the rack.
-
-**U6 — the venue becomes usable by a stranger** (prism). Two cuts, one purpose:
-(a) THE TEXT SLOT MUST BE PER TURN — `UI_TEXT` is the constant `say`, so a second turn's `set` and
-patches rewrite the region the first turn's bubble also binds (`kind: source`): every frame is
-right and the history smears. Fix is a per-device counter (`say.<n>`) plus a TWO-TURN e2e that
-fails today. (b) LOGIN AS A COMPONENT IN THE LAYOUT — the verbs exist and answer; the layout has no
-form, so a stranger can look but not ask (`turn` is user-gated). Typing after logging in is the
-acceptance.
-
-**U7 — sessions instead of devices, and history on connect** (prism + an application booth). The
-leg partitions by device id today; sessions are the real key. "Connect and see the history" is the
-`event:ui_init` path already ruled: the venue emits, a booth projects k10r's session into view
-frames. Needs the session concept before it needs code.
-
-**U8 — gravity's remaining phases**, then **U9 — k10r's deferred work**. Neither blocks the UI
-milestone; both are what makes the assistant useful once the venue has a face.
-
-## Precedents to imitate, not to invent around
-
-- **stage** (`~/world/fluxen/crates/stage`) is the server-side reference: a WS mirror that never
-  inspects payloads, routes raw frames between peers, and serves the UI. Prism's browser leg is the
-  same shape plus identity.
-- **reflux** (`~/world/reflux`) is the host-side reference: a Python producer, a pinned renderer
-  bundle, `window.fluxen.send` as the only uplink, and `reflux/wire.py` as the frame gate that
-  checks shape where the frame is built. Its wire is already fluxen's `Message {ev, sender, content}`.
-  Under fluxen's ADR 0021 it consumes the `boot` crate; the two adjustments it owes (a root-relative
-  public URL, and following `boot`'s uplink handle) are recorded in
-  `fluxen/docs/external-integration.md` §5.
-
-## The UI milestone (what U1–U3 buy)
-
-Open `http://<venue>:8765/assets/` → the two-column shell renders from the `init` layout and nothing
-else; the connection is anonymous (device identity, no login wall — authentication is a business
-decision, and this layout declares none); typing in the stream submits a turn on the same socket and
-the answer streams back into the same column. Login is a component IN the layout, not a gate.
-
-Done means measured on the running stack, not on the tests alone: `nu up.nu`, open the URL, one
-turn round trip, then `nu down.nu`.
-
-## Deployment facts that move with these units
-
-- prism's faces are two env vars, both DEFAULTS in its image: `PRISM_ASSETS` (the bundle
-  directory — the bundle IS the origin, so `/` is its `index.html`) and `PRISM_INIT`
-  (`file:<path>` | `event:<name>`, where the event is emitted on every renderer connect). A
-  deployment overrides either with `-e`; both absent is legal and the venue says so.
-- **The bundle route is decided: build.nu stages it.** `venue/` in the build context carries
-  the renderer bundle (built once, host-side, with trunk — an artifact, not a toolchain) and
-  this repo's `layout/`, and prism's Dockerfile COPYs both (`/app/dist`, `/app/layout`). The
-  bundle is therefore built by the trunk that fluxen's own image pins, and the venue never
-  rebuilds a front end inside its image.
-- `up.nu` reports the venue up only after `/` answers 200 — a venue without a bundle serves
-  identity and turns fine and looks exactly like a broken page in a browser, so the failure
-  belongs in the boot, not in the user's screen. `dev.nu` points the same two variables at the
-  tree (`fluxen/examples/renderer/dist`, `layout/venue.yaml`), so host mode and container mode
-  show the same page.
-
-## Decisions the plan depends on (do not re-litigate)
-
-- Identity and its storage are prism's: account registry, device anchors, argon2id, login — in
-  prism's own okm instance. Aura receives the authenticated sender as payload metadata only.
-- Authentication is a business-layer decision per event (`interface_schema.auth`); anonymous
-  connections are legitimate and never evicted.
-- The `init` source is a deployment fact with two forms (`file:`, `event:`); both deliver the layout
-  as ordinary `create` frames (then `init.result {frames:N}`), so the client has no layout path of its
-  own. The webhook form is refused (Fluxora's generation).
-- The browser leg speaks the renderer's wire (`Message`/`Outflow`), and the adaptation is prism's:
-  fluxen is pure UI and carries no per-host adapter. `{ev,args}` stays the CLI/effector/peer shape —
-  one shape per leg, never two on one leg.
-- A stream's format is the producer's call argument: gravity's turn takes `protocol` (`data` default |
-  `fluxen` view frames against the layout-declared slot); application knowledge stays in the booth.
-- Trust posture is declared, never defaulted (`PRISM_IDENTITY=required|open`), and the startup log
-  states it.
-
-> **THE MARKER IS `ui:` (2026-10-31, prism ADR-0017's Update).** Every marked event above is
-> `ui:<name>` — the rule, the direction and the stripping are unchanged, only the word is (in this
-> stack `view` also names krystallizer's session projection and fluxen's forcegraph view). Read the
-> 2026-10-29 entry's `view:<name>` as `ui:<name>`; `layout/venue.yaml` still speaks fluxen's
-> vocabulary upstream and needs no change.
 
 ## THE LAYOUT FILE IS GONE 2026-10-31
 
