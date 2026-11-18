@@ -49,9 +49,14 @@ def main [] {
         PRISM_ADDR: $venue
         PRISM_DATA: ($env.HOME | path join ".local/share/prism")
         PRISM_IDENTITY: "open"
-        # The bundle the UI build writes — the venue's only deployment fact left. The LAYOUT is
-        # the application's answer to `ui:connect`, so there is nothing to configure here.
+        # The bundle the UI build writes.
         PRISM_ASSETS: ($root | path join "fluxen/examples/renderer/dist")
+        # THE PAGE FRAME (prism ADR-0019): navigation and the regions islands draw into. A file,
+        # because a frame is data and its owner is the operator — and because the application that
+        # answers `ui:connect` can only draw its OWN surface, never the page it shares with others.
+        # Unset here = the old arrangement (the application draws the whole page); the reference
+        # frame in prism's own tree keeps the island slots the booths already know how to fill.
+        PRISM_SHELL: ($root | path join "prism/crates/prism/assets/shell.json")
         GRAVITY_STORE_URL: $"http://($mem)"
         GRAVITY_ENDPOINT: (endpoint)
         GRAVITY_MODEL: (model)
