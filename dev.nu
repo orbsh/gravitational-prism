@@ -57,6 +57,9 @@ def main [] {
         # Unset here = the old arrangement (the application draws the whole page); the reference
         # frame in prism's own tree keeps the island slots the booths already know how to fill.
         PRISM_SHELL: ($root | path join "prism/crates/prism/assets/shell.json")
+        # The page's name for gravity's region. The FRAME declares it and the BOOTH states it on
+        # every frame; both read this one deployment fact, so the two spellings cannot drift.
+        GRAVITY_ISLAND: "gravity-model"
         GRAVITY_STORE_URL: $"http://($mem)"
         GRAVITY_ENDPOINT: (endpoint)
         GRAVITY_MODEL: (model)
