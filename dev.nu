@@ -18,7 +18,6 @@ def main [] {
         k10r_cfg: ($root | path join "krystallizer/config/krystallizer.kdl")
         prism: ($root | path join "prism/target/release/prism")
         turn: ($root | path join "gravity/target/release/gravity-turn")
-        provider: ($root | path join "gravity/target/release/gravity-provider")
     }
     for path in ($bin | values) {
         if not ($path | path exists) {
@@ -66,7 +65,6 @@ def main [] {
         GRAVITY_KEY_ENV: "OPENAI_API_KEY"
         GRAVITY_MEMORY_SCOPE: "1"
         GRAVITY_TURN_BIN: $bin.turn
-        GRAVITY_PROVIDER_BIN: $bin.provider
     })
     let prism_bin = $bin.prism
     print $"prism  (ansi green)foreground(ansi reset)  ($venue)  — Ctrl-C, or nu down.nu from another terminal"

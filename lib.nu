@@ -8,7 +8,10 @@
 # Every checkout a Dockerfile COPYs or a Cargo.toml points at by path. fluxen is here for the
 # WIRE TYPE prism's renderer leg depends on (`content`), not because any of it is shipped from
 # these images (the bundle that ships is staged under `venue/`).
-export const REPOS = [aura effector induction krystallizer gravity fluxen prism]
+# `schematic` is here because gravity's booth depends on it by path (`../../../schematic/crates/
+# schematic`): a repo the manifests read must be in the context, or the build dies at manifest
+# resolution — before any COPY is looked at.
+export const REPOS = [aura effector induction krystallizer schematic gravity fluxen prism]
 
 export def world []: nothing -> string {
     $env.WORLD? | default ($env.HOME | path join "world")
