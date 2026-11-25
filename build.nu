@@ -64,7 +64,11 @@ def main [
     if ((which trunk | is-empty)) {
         error make { msg: "trunk is not on PATH — the renderer bundle cannot be built (fluxen's Dockerfile pins one; install it host-side for a release build)" }
     }
-    let renderer = ($src | path join "fluxen" "examples" "renderer")
+    # Whichever page the renderer ships as its own trunk entry: the boot became a crate
+    # (`ui_leptos`), so the page that used to live in `examples/renderer` is that crate's index —
+    # the `<div id="fluxen">` default, which needs no configuration against this venue (the boot's
+    # defaults are path `/channel`, codec json — the same two the venue defaults to).
+    let renderer = ($src | path join "fluxen" "crates" "ui_leptos")
     let dist = ($venue | path join "dist")
     let bundle = (do { cd $renderer; ^trunk build --release --dist $dist } | complete)
     if $bundle.exit_code != 0 {
