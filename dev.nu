@@ -50,7 +50,7 @@ def main [] {
         PRISM_DATA: ($env.HOME | path join ".local/share/prism")
         PRISM_IDENTITY: "open"
         # The bundle the UI build writes.
-        PRISM_ASSETS: ($root | path join "fluxen/examples/renderer/dist")
+        PRISM_ASSETS: ($root | path join "fluxen/crates/ui_leptos/dist")
         # THE PAGE FRAME (prism ADR-0019): navigation and the regions islands draw into. A file,
         # because a frame is data and its owner is the operator — and because the application that
         # answers `ui:connect` can only draw its OWN surface, never the page it shares with others.
