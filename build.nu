@@ -51,31 +51,50 @@ def main [
     }
 
     # The renderer bundle is a DEPLOYMENT INPUT, not repo content: the image carries an
-    # artifact, not a toolchain and not a second checkout. It is built here, once, with the
-    # same trunk fluxen's own image pins — a bundle from a different trunk is a different
-    # artifact, and the venue would be serving a front end nobody verified. A layout is NOT
-    # staged any more: the screen is an application's answer to `ui:connect`, so a file would
-    # only say that no application answered.
+    # artifact, not a toolchain. It is TAKEN FROM THE RENDERER'S RELEASE, not built here: a
+    # bundle is the thing fluxen's own CI cut from a tag with a pinned trunk, and building one
+    # here would mean a wasm toolchain on every deploy host (and a second artifact nobody
+    # verified). Every file the release's manifest names is checked against its sha256 before
+    # anything is staged, so a truncated download or a moved tag fails here, not in a browser.
+    # The pin is `FLUXEN_TAG` — bump it with the venues' other deployment facts.
+    # A layout is NOT staged any more: the screen is an application's answer to `ui:connect`,
+    # so a file would only say that no application answered.
     let venue = ($context | path join "venue")
     # The venue dir is REBUILT, not updated in place: an artifact left in the context by an older
     # build (a directory this script no longer stages) would ride into the image unnoticed.
     ^rm -rf $venue
     mkdir $venue
-    if ((which trunk | is-empty)) {
-        error make { msg: "trunk is not on PATH — the renderer bundle cannot be built (fluxen's Dockerfile pins one; install it host-side for a release build)" }
-    }
-    # Whichever page the renderer ships as its own trunk entry: the boot became a crate
-    # (`ui_leptos`), so the page that used to live in `examples/renderer` is that crate's index —
-    # the `<div id="fluxen">` default, which needs no configuration against this venue (the boot's
-    # defaults are path `/channel`, codec json — the same two the venue defaults to).
-    let renderer = ($src | path join "fluxen" "crates" "ui_leptos")
     let dist = ($venue | path join "dist")
-    let bundle = (do { cd $renderer; ^trunk build --release --dist $dist } | complete)
-    if $bundle.exit_code != 0 {
-        print ($bundle.stderr | lines | last 15 | str join (char nl))
-        error make { msg: "the renderer bundle did not build" }
+    let fluxen_tag = ($env.FLUXEN_TAG? | default "v0.3.3")
+    let tarball_url = $"https://github.com/orbsh/fluxen/releases/download/($fluxen_tag)/fluxen-ui-($fluxen_tag).tar.gz"
+    let tarball = ($venue | path join "fluxen-ui.tar.gz")
+    let fetched = (^curl -fL --http1.1 --retry 5 --retry-delay 2 --retry-all-errors --connect-timeout 20 -o $tarball $tarball_url | complete)
+    if $fetched.exit_code != 0 {
+        error make { msg: $"the renderer bundle would not download from ($tarball_url): ($fetched.stderr | str trim)" }
     }
-    print $"venue (ansi green)staged(ansi reset)  bundle → ($venue)"
+    mkdir $dist
+    let unpacked = (^tar -xzf $tarball -C $dist | complete)
+    if $unpacked.exit_code != 0 {
+        error make { msg: $"the renderer bundle would not unpack: ($unpacked.stderr | str trim)" }
+    }
+    ^rm $tarball
+
+    let manifest_path = ($dist | path join "manifest.json")
+    if not ($manifest_path | path exists) {
+        error make { msg: $"the bundle from ($fluxen_tag) carries no manifest.json — nothing to verify it against" }
+    }
+    let manifest = (open $manifest_path)
+    for entry in ($manifest.files | transpose name meta) {
+        let path = ($dist | path join $entry.name)
+        if not ($path | path exists) {
+            error make { msg: $"($fluxen_tag) names ($entry.name) and does not carry it" }
+        }
+        let got = (open --raw $path | hash sha256)
+        if $got != $entry.meta.sha256 {
+            error make { msg: $"($entry.name) does not match the manifest: ($got) vs ($entry.meta.sha256)" }
+        }
+    }
+    print $"venue (ansi green)staged(ansi reset)  bundle ← fluxen ($fluxen_tag), (($manifest.files | columns | length)) files verified → ($venue)"
 
     for name in $names {
         let target = ($root | path join "target" $name)
